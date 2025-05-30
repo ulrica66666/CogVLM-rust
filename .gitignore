@@ -1,0 +1,6 @@
+target/
+Cargo.lock
+*.py
+*.png
+*.jpg
+.DS_Store
