@@ -2,6 +2,7 @@ use cogvlm_image_preprocessor::processor::{ImageProcessor, process_images_in_bat
 use ndarray::s;
 use image::open;
 
+// 预处理测试
 fn main() {
     let processor = ImageProcessor::new(384);
     let image_paths = vec!["examples/1.jpg"];

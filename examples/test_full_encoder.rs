@@ -1,5 +1,5 @@
 // examples/test_full_encoder.rs
-
+// 图编码器整体测试
 use cogvlm_image_preprocessor::{
     processor::ImageProcessor,
     patch_embed::PatchEmbed,
