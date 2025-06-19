@@ -1,28 +1,34 @@
-// src/glu_projection.rs
-
 use ndarray::{Array2, Axis, s};
 use rayon::prelude::*;
 use std::simd::{Simd};
 use std::simd::num::SimdFloat;
+use ndarray_rand::RandomExt;
+use rand_distr::Uniform;
 
 pub struct GLUProjection {
     pub in_dim: usize,
     pub out_dim: usize,
-    pub weight: Array2<f32>,
-    pub bias: Option<Array2<f32>>,
+    pub weight: Array2<f32>,      // [in_dim, 2*out_dim]
+    pub bias: Option<Array2<f32>> // [1, 2*out_dim]
 }
 
 impl GLUProjection {
     pub fn new(in_dim: usize, out_dim: usize) -> Self {
-        let weight = Array2::<f32>::zeros((in_dim, 2 * out_dim));
-        let bias = Some(Array2::<f32>::zeros((1, 2 * out_dim)));
+        let fan_in = in_dim;
+        let fan_out = 2 * out_dim;
+        let limit = (6.0 / (fan_in + fan_out) as f32).sqrt();
+        let dist = Uniform::new(-limit, limit);
+
+        let weight = Array2::random((in_dim, 2 * out_dim), dist);
+        let bias = Some(Array2::zeros((1, 2 * out_dim)));
+
         GLUProjection { in_dim, out_dim, weight, bias }
     }
 
     pub fn forward(&self, x: &Array2<f32>) -> Array2<f32> {
         let mut projected = x.dot(&self.weight);
         if let Some(bias) = &self.bias {
-            projected = &projected + bias;
+            projected += bias;
         }
 
         let value_part = projected.slice(s![.., 0..self.out_dim]).to_owned();
@@ -34,7 +40,7 @@ impl GLUProjection {
     pub fn forward_rayon(&self, x: &Array2<f32>) -> Array2<f32> {
         let mut projected = x.dot(&self.weight);
         if let Some(bias) = &self.bias {
-            projected = &projected + bias;
+            projected += bias;
         }
 
         let rows: Vec<_> = projected.axis_iter(Axis(0)).map(|r| r.to_owned()).collect();
@@ -49,7 +55,7 @@ impl GLUProjection {
     pub fn forward_rayon_simd(&self, x: &Array2<f32>) -> Array2<f32> {
         let mut projected = x.dot(&self.weight);
         if let Some(bias) = &self.bias {
-            projected = &projected + bias;
+            projected += bias;
         }
 
         let rows: Vec<_> = projected.axis_iter(Axis(0)).map(|r| r.to_owned()).collect();
@@ -62,14 +68,14 @@ impl GLUProjection {
     }
 }
 
-// 正常版本的 GLU 激活
+// 标准 GLU 激活函数
 fn activate_glu(row: ndarray::Array1<f32>, out_dim: usize) -> ndarray::Array1<f32> {
     let value = row.slice(s![0..out_dim]).to_owned();
-    let gate = row.slice(s![out_dim..]).mapv(|v| v.max(0.0));
+    let gate = row.slice(s![out_dim..]).mapv(|v| v.max(0.0)); // ReLU 激活门控
     value * gate
 }
 
-// SIMD 加速的 GLU 激活
+// SIMD
 fn activate_glu_simd(row: ndarray::Array1<f32>, out_dim: usize) -> ndarray::Array1<f32> {
     const LANES: usize = 8;
     type SimdType = Simd<f32, LANES>;

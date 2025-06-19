@@ -8,7 +8,7 @@ fn main() {
     let glu = GLUProjection::new(in_dim, out_dim);
 
     let tensors: Vec<Array2<f32>> = (0..50)
-        .map(|_| Array2::ones((256, in_dim)))
+        .map(|_| Array2::ones((512, in_dim)))
         .collect();
 
     let t0 = Instant::now();

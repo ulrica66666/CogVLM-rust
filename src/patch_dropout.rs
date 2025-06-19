@@ -6,7 +6,6 @@ use rand::thread_rng;
 use rayon::prelude::*;
 use std::simd::Simd;  
 
-/// 原始版本 + Rayon + SIMD 优化的 PatchDropout
 pub struct PatchDropout {
     pub keep_ratio: f32,
     pub cls_token: bool,
@@ -16,8 +15,7 @@ impl PatchDropout {
     pub fn new(keep_ratio: f32, cls_token: bool) -> Self {
         PatchDropout { keep_ratio, cls_token }
     }
-
-    /// 原始顺序版本
+    // 原始版本
     pub fn forward(&self, x: &Array2<f32>) -> Array2<f32> {
         let (n, _) = x.dim();
         if self.keep_ratio >= 1.0 {
@@ -52,7 +50,7 @@ impl PatchDropout {
         concatenate(Axis(0), &views).unwrap()
     }
 
-    /// Rayon 并行版本
+    // Rayon
     pub fn forward_rayon(&self, x: &Array2<f32>) -> Array2<f32> {
         let (n, _) = x.dim();
         if self.keep_ratio >= 1.0 {
@@ -87,7 +85,7 @@ impl PatchDropout {
         concatenate(Axis(0), &views).unwrap()
     }
 
-    /// Rayon + SIMD 加速版本
+    // simd
     pub fn forward_rayon_simd(&self, x: &Array2<f32>) -> Array2<f32> {
         let (n, d) = x.dim();
         if self.keep_ratio >= 1.0 {
@@ -127,7 +125,7 @@ impl PatchDropout {
     }
 }
 
-/// SIMD 加速行拷贝（每次处理 LANES 个 float）
+// simd加速拷贝 每次处理LANES个float
 fn copy_row_simd(input: &[f32]) -> Vec<f32> {
     const LANES: usize = 8;
     type SimdType = Simd<f32, LANES>;

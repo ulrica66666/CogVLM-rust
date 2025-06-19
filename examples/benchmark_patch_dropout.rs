@@ -1,4 +1,4 @@
-// benches/benchmark_patch_dropout.rs
+// examples/benchmark_patch_dropout.rs
 
 use cogvlm_image_preprocessor::patch_dropout::PatchDropout;
 use ndarray::Array2;
@@ -10,8 +10,8 @@ fn main() {
     let cls_token = true;
     let dropout = PatchDropout::new(keep_ratio, cls_token);
 
-    // 构造 50 个待测输入：假设每个输入有 256 个“patch”，每个 patch 1024 维
-    let n = 256;
+    // 构造50个待测输入
+    let n = 1024;
     let dim = 1024;
     let tensors: Vec<Array2<f32>> = (0..50)
         .map(|_| Array2::ones((n, dim)))

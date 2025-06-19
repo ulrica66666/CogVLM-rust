@@ -1,7 +1,8 @@
 use ndarray::{Array2, Array3, s};
 use rayon::prelude::*;
 use std::simd::{Simd};
-use std::simd::prelude::*;
+use ndarray_rand::RandomExt;
+use rand_distr::StandardNormal;
 
 pub struct PatchEmbed {
     pub patch_size: usize,
@@ -13,8 +14,10 @@ pub struct PatchEmbed {
 impl PatchEmbed {
     pub fn new(patch_size: usize, embed_dim: usize) -> Self {
         let patch_dim = patch_size * patch_size * 3;
-        let weight = Array2::<f32>::zeros((embed_dim, patch_dim));
-        let bias = None;
+        // let weight = Array2::<f32>::zeros((embed_dim, patch_dim));
+        // let bias = None;
+        let weight = Array2::random((embed_dim, patch_dim), StandardNormal);
+        let bias   = Some(Array2::random((embed_dim, 1), StandardNormal));
         PatchEmbed { patch_size, embed_dim, weight, bias }
     }
 

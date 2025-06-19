@@ -11,7 +11,7 @@ fn generate_tensor(seq_len: usize, dim: usize) -> Array2<f32> {
 fn main() {
     let seq_len = 1024;
     let dim = 128;
-    let n_iters = 100;
+    let n_iters = 1024;
 
     let mut tensors: Vec<Array2<f32>> = (0..n_iters)
         .map(|_| generate_tensor(seq_len, dim))
